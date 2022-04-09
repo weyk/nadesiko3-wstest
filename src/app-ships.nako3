@@ -1,0 +1,540 @@
+"ships"にアプリケーション登録には(WS,DT)
+　WSのDTをships処理
+ここまで
+
+ships宇宙動作中はオフ
+ships最終PL退去日時は時間ミリ秒取得
+shipsTimerIDは0
+
+ships環境は{
+　宇宙W:500,
+　宇宙H:500,
+　初期LIFE:5,
+　視界半径:200,
+　隕石数:(500*500/(150*150)*1.8)の整数部分,
+　PL速:1.5,
+　PL回速:8.0,
+　PL字:「🚀」,
+　PL回転補正:45,
+　PLサイズ:24,
+　隕石サイズ:12,
+　隕石字:「🥔」,
+　shotsL:6,
+　shotsW:2,
+　shots寿命:80,
+　shots間隔:8,
+　shots最大:5,
+　行動レート:1.5,
+　フレーム秒:1/30,
+　宇宙予備時間:30*1000
+}
+
+shipsPLは{}
+
+ships宇宙は{
+　potatos:[],
+　shots:[],
+　rings:[]
+}
+
+●(WSのJを)ships処理とは
+　J["type"]で条件分岐
+　　「entry」ならば、
+　　　ships宇宙創成する
+　　　WS["nick"]はJ["data"]["nick"]
+　　　MSGは{type:"msg",data:「{今}> {WS["nick"]}さんが参加しました」}
+　　　MSGを"ships"へコマンド全APP送信。
+　　　IDはWS["ID"]
+　　　PLは{}
+　　　PL["ID"]はID
+　　　PL["nick"]はWS["nick"]
+　　　PL["速"]はships環境["PL速"]
+　　　PL["回速"]はships環境["PL回速"]
+　　　PL["サイズ"]はships環境["PLサイズ"]
+　　　PL["X"]は((ships環境["宇宙W"]*0.9)の乱数)+ships環境["宇宙W"]*0.05
+　　　PL["Y"]は((ships環境["宇宙H"]*0.9)の乱数)+ships環境["宇宙H"]*0.05
+　　　PL["D"]は45*(8の乱数)
+　　　PL["DX"]はCOS(DEG2RAD(PL["D"]))×PL["速"]
+　　　PL["DY"]はSIN(DEG2RAD(PL["D"]))×PL["速"]
+　　　PL["TD"]はPL["D"]
+　　　PL["LIFE"]はships環境["初期LIFE"]
+　　　PL["score"]は0
+　　　PL["control"]は0
+　　　PL["control_current"]は0
+　　　PL["control_prev"]は0
+　　　PL["shots_count"]は0
+　　　PL["shots_cooldown"]は0
+　　　PL["WS"]はWS["WS"]
+　　　shipsPL[ID]はPL
+　　　MSGは{type:"env",data:ships環境}
+　　　MSGをWS["WS"]にコマンド個別送信
+　　ここまで
+　　「close」ならば、
+　　　IDはWS["ID"]
+　　　shipsPLからIDを辞書キー削除
+　　　もし、WS["nick"]≠NULLならば、
+　　　　MSGは{type:"msg",data:「{今}> {WS["nick"]}さんが離脱しました」}
+　　　　MSGを"ships"へコマンド全APP送信。
+　　　ここまで
+　　　ships最終PL退去日時は時間ミリ秒取得
+　　ここまで
+　　「control」ならば、
+　　　IDはWS["ID"]
+　　　PLはshipsPL[ID]
+　　　PL["control"]はJ["data"]
+　　ここまで
+　　「quit」ならば、
+　　　WS["WS"]をWSサーバ個別閉じる
+　　ここまで
+　ここまで
+ここまで
+
+●ships隕石出現とは
+　出現Xは(ships環境["宇宙W"])の乱数
+　出現Yは(ships環境["宇宙H"])の乱数
+　出現向きは360の乱数
+　速さは0.4+(20の乱数)÷18
+　もし、速さ＞3.0ならば、
+　　速さは3.0
+　ここまで
+　回転速度は(5の乱数)＋(5の乱数)
+　もし、(２の乱数)<1ならば、
+　　回転速度は回転速度×(-1)
+　ここまで
+　向きはDEG2RAD(出現向き)
+　隕石は{
+　　TYPE:"potatos",
+　　X:出現X,
+　　Y:出現Y,
+　　速:速さ,
+　　サイズ:ships環境["隕石サイズ"],
+　　字:ships環境["隕石字"],
+　　DD:回転速度,
+　　DX:COS(向き)×速さ,
+　　DY:SIN(向き)×速さ
+　}
+　ships宇宙["potatos"]に隕石を配列追加
+ここまで
+
+●ships宇宙創成とは
+　もし、ships宇宙動作中がオンならば、戻る
+　もし、shipsTimerID＞０ならば、
+　　shipsTimerIDのタイマー停止
+　ここまで
+　(ships環境["隕石数"])回繰り返す
+　　ships隕石出現
+　ここまで
+　(ships環境["フレーム秒"])秒毎には
+　　ships更新描画処理
+　ここまで
+　shipsTimerIDは対象
+　ships宇宙動作中はオン
+　#「宇宙を創成しました」を表示
+ここまで
+
+●ships宇宙消滅とは
+　もし、ships宇宙動作中がオフならば、戻る
+　もし、shipsTimerID＞０ならば、
+　　shipsTimerIDのタイマー停止
+　　shipsTimerIDは0
+　ここまで
+　ships宇宙["potatos"]は空配列
+　ships宇宙["shot"]は空配列
+　ships宇宙["rings"]は空配列
+　ships宇宙動作中はオフ
+　#「宇宙を消滅させました」を表示
+ここまで
+
+●ships更新描画処理とは
+　# 宇宙消滅チェック
+　もし、(shipsPLの要素数)＝０ならば、
+　　もし、時間ミリ秒取得－ships最終PL退去日時＞ships環境["宇宙予備時間"]ならば、
+　　　ships宇宙消滅する
+　　　戻る
+　　ここまで
+　ここまで
+　# PLの操作状態を確定
+　shipsPLを反復する
+　　PLはそれ
+　　PL["control_prev"]はPL["control_current"]
+　　PL["control_current"]はPL["control"]
+　ここまで
+　# PLの行動
+　shipsPLを反復する
+　　PLはそれ
+　　PLのshipsPL行動処理
+　ここまで
+　# PL以外の行動
+　ships宇宙["shots"]をships群進行処理
+　ships宇宙["rings"]をships群進行処理
+　ships宇宙["potatos"]をships群進行処理
+　# 判定
+　ships自弾判定処理
+　ships隕石判定処理
+　# PLの操作を反映
+　shipsPLを反復する
+　　PLはそれ
+　　PLのships操作処理
+　ここまで
+　# PLの表示内容収集・送信
+　shipsPLを反復する
+　　PLはそれ
+　　PLVIEWは{X:PL["X"]の整数部分,Y:PL["Y"]の整数部分,D:PL["D"],ID:PL["ID"],SCORE:PL["score"],LIFE:PL["LIFE"]}
+　　PLVIEW["VIEW"]はPLのships視界処理
+　　MSGは{type:"view",data:PLVIEW}
+　　MSGをPL["WS"]にコマンド個別送信
+　ここまで
+ここまで
+
+●(XY1からXY2の)ships距離とは
+　SQRT((XY1["X"]-XY2["X"])*(XY1["X"]-XY2["X"])+(XY1["Y"]-XY2["Y"])*(XY1["Y"]-XY2["Y"]))で戻る
+ここまで
+
+●(XY1でXY2を)ships転置とは
+　XはXY2["X"]
+　YはXY2["Y"]
+　もし、XY1["X"]＜ships環境["視界半径"]ならば、
+　　もし、ships環境["宇宙W"]-X+XY1["X"]≦ships環境["視界半径"]ならば、
+　　　XはX-ships環境["宇宙W"]
+　　ここまで
+　違えばもし、XY1["X"]+ships環境["視界半径"]＞ships環境["宇宙W"]ならば、
+　　もし、ships環境["宇宙W"]-XY1["X"]+X≦ships環境["視界半径"]ならば、
+　　　XはX+ships環境["宇宙W"]
+　　ここまで
+　ここまで
+　もし、XY1["Y"]＜ships環境["視界半径"]ならば、
+　　もし、ships環境["宇宙H"]-Y+XY1["Y"]≦ships環境["視界半径"]ならば、
+　　　YはY-ships環境["宇宙H"]
+　　ここまで
+　違えばもし、XY1["Y"]+ships環境["視界半径"]＞ships環境["宇宙H"]ならば、
+　　もし、ships環境["宇宙H"]-XY1["Y"]+Y≦ships環境["視界半径"]ならば、
+　　　YはY+ships環境["宇宙H"]
+　　ここまで
+　ここまで
+　{X:X,Y:Y}で戻る
+ここまで
+
+●ships自弾判定処理とは
+　弾数はships宇宙["shots"]の配列要素数
+　もし、弾数が０ならば、
+　　戻る
+　ここまで
+　隕石数はships宇宙["potatos"]の配列要素数
+　PL数はshipsPLの要素数
+　(弾数)回
+　　Tは弾数-回数
+　　弾はships宇宙["shots"][T]
+　　弾Xは(弾["X"]+弾["DDX"]*弾["長"]+ships環境["宇宙W"])%ships環境["宇宙W"]
+　　弾Yは(弾["Y"]+弾["DDY"]*弾["長"]+ships環境["宇宙H"])%ships環境["宇宙H"]
+　　処理済みはオフ
+　　もし、隕石数＞０ならば
+　　　(隕石数)回
+　　　　Pは隕石数-回数
+　　　　隕石はships宇宙["potatos"][P]
+　　　　TXYは{X:弾X,Y:弾Y}で隕石をships転置
+　　　　もし、弾X＜TXY["X"]＋隕石["サイズ"]×0.4&&弾X＞TXY["X"]−隕石["サイズ"]×0.4ならば、
+　　　　　もし、弾Y＜TXY["Y"]＋隕石["サイズ"]×0.4&&弾Y＞TXY["Y"]－隕石["サイズ"]×0.4ならば、
+　　　　　　PLはshipsPL[弾["PLID"]]
+　　　　　　もし、PL≠NULLならば、
+　　　　　　　PL["shots_count"]はPL["shots_count"]-1
+　　　　　　ここまで
+　　　　　　ships宇宙["shots"]のTを配列切取
+　　　　　　処理済みはオン
+　　　　　ここまで
+　　　　ここまで
+　　　ここまで
+　　ここまで
+　　もし、(PL数＞０)＆＆(処理済み＝オフ)ならば
+　　　shipsPLを反復する
+　　　　TPLはそれ
+　　　　もし、弾["PLID"]＝TPL["ID"]ならば、続ける
+　　　　TXYは{X:弾X,Y:弾Y}でTPLをships転置
+　　　　もし、弾X＜TPL["X"]＋TPL["サイズ"]×0.2&&弾X＞TPL["X"]−TPL["サイズ"]×0.2ならば、
+　　　　　もし、弾Y＜TPL["Y"]＋TPL["サイズ"]×0.2&&弾Y＞TPL["Y"]－TPL["サイズ"]×0.2ならば、
+　　　　　　PLはshipsPL[弾["PLID"]]
+　　　　　　もし、PL≠NULLならば、
+　　　　　　　PL["shots_count"]はPL["shots_count"]-1
+　　　　　　　PL["score"]はPL["score"]+1
+　　　　　　ここまで
+　　　　　　ships宇宙["shots"]のTを配列切取
+　　　　　　もし、TPL["LIFE"]＞0ならば、
+　　　　　　　TPL["LIFE"]はTPL["LIFE"]-1
+　　　　　　ここまで
+　　　　　　処理済みはオン
+　　　　　　抜ける
+　　　　　ここまで
+　　　　ここまで
+　　　ここまで
+　　ここまで
+　ここまで
+ここまで
+
+●ships隕石判定処理とは
+　隕石数はships宇宙["potatos"]の配列要素数
+　もし、隕石数が０ならば、
+　　戻る
+　ここまで
+　PL数はshipsPLの要素数
+　(隕石数)回
+　　Pは隕石数-回数
+　　隕石はships宇宙["potatos"][P]
+　　処理済みはオフ
+　　もし、(PL数＞０)ならば
+　　　shipsPLを反復する
+　　　　TPLはそれ
+　　　　TXYは隕石でTPLをships転置
+　　　　もし、隕石["X"]－隕石["サイズ"]×0.3＜TXY["X"]＋TPL["サイズ"]×0.4&&隕石["X"]＋隕石["サイズ"]×0.3＞TXY["X"]－TPL["サイズ"]×0.4ならば、
+　　　　　もし、隕石["Y"]－隕石["サイズ"]×0.3＜TXY["Y"]＋TPL["サイズ"]×0.3&&隕石["Y"]＋隕石["サイズ"]×0.3＞TXY["Y"]－TPL["サイズ"]×0.3ならば、
+　　　　　　隕石["X"]はships環境["宇宙W"]の乱数
+　　　　　　隕石["Y"]はships環境["宇宙H"]の乱数
+　　　　　　もし、TPL["LIFE"]＞0ならば、
+　　　　　　　TPL["LIFE"]はTPL["LIFE"]-1
+　　　　　　ここまで
+　　　　　　処理済みはオン
+　　　　　　抜ける
+　　　　　ここまで
+　　　　ここまで
+　　　ここまで
+　　ここまで
+　ここまで
+ここまで
+
+●(群を)ships群進行処理とは
+　個体数は群の配列要素数
+　(個体数)回、
+　　個体は群[個体数-回数]
+　　個体["X"]は個体["X"]+個体["DX"]×ships環境["行動レート"]
+　　個体["Y"]は個体["Y"]+個体["DY"]×ships環境["行動レート"]
+　　もし、個体["T"]≠NULLならば、
+　　　個体["T"]は個体["T"]-1
+　　　もし、個体["T"]≦0ならば、
+　　　　もし、個体["TYPE"]が「shots」ならば、
+　　　　　PLはshipsPL[個体["PLID"]]
+　　　　　もし、PL≠NULLならば、
+　　　　　　PL["shots_count"]はPL["shots_count"]-1
+　　　　　ここまで
+　　　　ここまで
+　　　　群の個体数−回数を配列切り取る
+　　　　続ける
+　　　ここまで
+　　ここまで
+　　もし、個体["D"]≠NULLならば、
+　　　もし、個体["DD"]≠NULLならば、
+　　　　個体["D"]は個体["D"]+個体["DD"]×ships環境["行動レート"]
+　　　　もし、個体["D"]＜0ならば、
+　　　　　個体["D"]は個体["D"]+360
+　　　　違えばもし、個体["D"]≧360ならば、
+　　　　　個体["D"]は個体["D"]-360
+　　　　ここまで
+　　　ここまで
+　　ここまで
+　　もし、個体["X"]＜0ならば、
+　　　個体["X"]は個体["X"]+ships環境["宇宙W"]
+　　違えばもし、個体["X"]≧ships環境["宇宙W"]ならば、
+　　　個体["X"]は個体["X"]-ships環境["宇宙W"]
+　　ここまで
+　　もし、個体["Y"]＜0ならば、
+　　　個体["Y"]は個体["Y"]+ships環境["宇宙H"]
+　　違えばもし、個体["Y"]≧ships環境["宇宙H"]ならば、
+　　　個体["Y"]は個体["Y"]-ships環境["宇宙H"]
+　　ここまで
+　ここまで
+ここまで
+
+●(PLの)shipsPL行動処理
+　もし、PL["shots_cooldown"]＞0ならば、
+　　PL["shots_cooldown"]はPL["shots_cooldown"]-1
+　ここまで
+　もし、PL["D"]がPL["TD"]でなければ、
+　　もし、PL["TD"]＞PL["D"]ならば
+　　　もし、PL["TD"]－PL["D"]≦１８０ならば、
+　　　　DはPL["D"]＋PL["回速"]×ships環境["行動レート"]
+　　　　もし、D＞PL["TD"]ならば、
+　　　　　DはPL["TD"]
+　　　　ここまで
+　　　違えば、
+　　　　DはPL["D"]－PL["回速"]×ships環境["行動レート"]
+　　　　もし、D＜０ならば、
+　　　　　DはD＋３６０
+　　　　　もし、D＜PL["TD"]ならば、
+　　　　　　DはPL["TD"]
+　　　　　ここまで
+　　　　ここまで
+　　　ここまで
+　　違えば、
+　　　もし、PL["D"]－PL["TD"]≦１８０ならば、
+　　　　DはPL["D"]－PL["回速"]×ships環境["行動レート"]
+　　　　もし、D＜PL["TD"]ならば、
+　　　　　DはPL["TD"]
+　　　　ここまで
+　　　違えば、
+　　　　DはPL["D"]＋PL["回速"]×ships環境["行動レート"]
+　　　　もし、D≧３６０ならば、
+　　　　　DはD－３６０
+　　　　　もし、D＞PL["TD"]ならば、
+　　　　　　DはPL["TD"]
+　　　　　ここまで
+　　　　ここまで
+　　　ここまで
+　　ここまで
+　　PL["D"]はD
+　　向きはDEG2RAD(D)
+　　PL["DX"]はCOS(向き)×PL["速"]
+　　PL["DY"]はSIN(向き)×PL["速"]
+　ここまで
+　XはPL["X"]＋PL["DX"]×ships環境["行動レート"]
+　YはPL["Y"]＋PL["DY"]×ships環境["行動レート"]
+　もし、X＜0ならば、
+　　XはX+ships環境["宇宙W"]
+　違えばもし、X≧ships環境["宇宙W"]ならば、
+　　XはX-ships環境["宇宙W"]
+　ここまで
+　もし、Y＜0ならば、
+　　YはY+ships環境["宇宙H"]
+　違えばもし、Y≧ships環境["宇宙H"]ならば、
+　　YはY-ships環境["宇宙H"]
+　ここまで
+　PL["X"]はX
+　PL["Y"]はY
+ここまで
+
+●(PLの)ships視界処理とは
+　VIEWは[]
+　# 友軍の弾の表示
+　ships宇宙["shots"]を反復する
+　　Tはそれ
+　　TXYはPLでTをships転置
+　　距離はPLからTXYのships距離
+　　もし、距離＜ships環境["視界半径"]ならば、
+　　　ITEMは{
+　　　　type:"SHOTS",
+　　　　X:(TXY["X"]-PL["X"])の整数部分,
+　　　　Y:(TXY["Y"]-PL["Y"])の整数部分,
+　　　　D:T["D"],
+　　　　DDX:T["DDX"],
+　　　　DDY:T["DDY"],
+　　　　W:T["太"],
+　　　　L:T["長"],
+　　　　PLID:T["PLID"]
+　　　}
+　　　VIEWにITEMを配列追加する。
+　　ここまで
+　ここまで
+　# 隕石を
+　ships宇宙["potatos"]を反復する
+　　Tはそれ
+　　TXYはPLでTをships転置
+　　距離はPLからTXYのships距離
+　　もし、距離＜ships環境["視界半径"]ならば、
+　　　ITEMは{
+　　　　type:"POTATOS",
+　　　　X:(TXY["X"]-PL["X"])の整数部分,
+　　　　Y:(TXY["Y"]-PL["Y"])の整数部分,
+　　　　D:T["D"],
+　　　　字:T["字"],
+　　　　SIZE:T["サイズ"]
+　　　}
+　　　VIEWにITEMを配列追加する。
+　　ここまで
+　ここまで
+　# 友軍機の表示
+　shipsPLを反復する
+　　TPLはそれ
+　　もし、PL["ID"]=TPL["ID"]ならば、続ける
+　　TXYはPLでTPLをships転置
+　　距離はPLからTXYのships距離
+　　もし、距離＜ships環境["視界半径"]ならば、
+　　　ITEMは{
+　　　　type:"PL",
+　　　　X:(TXY["X"]-PL["X"])の整数部分,
+　　　　Y:(TXY["Y"]-PL["Y"])の整数部分,
+　　　　PLID:TPL["ID"],
+　　　　D:TPL["D"]
+　　　}
+　　　VIEWにITEMを配列追加する。
+　　ここまで
+　ここまで
+　VIEWで戻る
+ここまで
+
+●（PLから)shipsShots発射とは
+　速さは2.5
+　出現向きはPL["D"]
+　向きはDEG2RAD(出現向き)
+　弾は{
+　　TYPE:"shots",
+　　X:PL["X"]＋PL["サイズ"]÷２×COS(向き),
+　　Y:PL["Y"]＋PL["サイズ"]÷２×SIN(向き),
+　　D:出現向き,
+　　速:速さ,
+　　DX:COS(向き)×速さ,
+　　DY:SIN(向き)×速さ,
+　　DDX:COS(向き),
+　　DDY:SIN(向き),
+　　長:ships環境["shotsL"],
+　　太:ships環境["shotsW"],
+　　PLID:PL["ID"],
+　　T:ships環境["shots寿命"]
+　}
+　ships宇宙["shots"]に弾を配列追加
+ここまで
+
+●(PLの)ships操作処理とは
+　DXは0
+　DYは0
+　DFIREはオフ
+　もし、(PLで12のships保持チェック)ならば、
+　　DYは-1
+　ここまで
+　もし、(PLで13のships保持チェック)ならば、
+　　DYは1
+　ここまで
+　もし、(PLで14のships保持チェック)ならば、
+　　DXは-1
+　ここまで
+　もし、(PLで15のships保持チェック)ならば、
+　　DXは1
+　ここまで
+　もし、(PLで0のships押下チェック)ならば、
+　　DFIREはオン
+　ここまで
+　もし、DFIRE&&PL["LIFE"]＞0ならば、
+　　もし、PL["shots_count"]＜ships環境["shots最大"]ならば、
+　　　もし、PL["shots_cooldown"]＝0ならば、
+　　　　PLからshipsShots発射
+　　　　PL["shots_count"]はPL["shots_count"]+1
+　　　　PL["shots_cooldown"]はships環境["shots間隔"]
+　　　ここまで
+　　ここまで
+　ここまで
+　もし、DX≠0||DY≠0ならば、
+　　RAD向きはDXとDYのATAN2
+　　D向きはRAD2DEG(RAD向き)
+　　もし、D向き＜０ならば、
+　　　D向きはD向き＋３６０
+　　ここまで
+　　PL["TD"]はD向き
+　ここまで
+ここまで
+
+●(PLでINDEXの)ships押下チェックとは
+　値は1をINDEXでSHIFT_L
+　((値とPL["control_current"]のAND)と(PL["control_prev"]のNOT)のAND)で戻る
+ここまで
+
+●(PLでINDEXの)ships保持チェックとは
+　値は1をINDEXでSHIFT_L
+　(値とPL["control_current"]のAND)≠０で戻る
+ここまで
+
+ATAN2関数文字列は『return Math.atan2(y, x)』
+ATAN2関数は["y,x"]とATAN2関数文字列でJS関数作成
+
+●(ARGSとBODYで)JS関数作成とは
+　『(function(A,B){return new Function(A,B);})』を[ARGS,BODY]でJS関数実行を戻す
+ここまで
+
+●(xとyの)ATAN2とは
+　ATAN2関数(y, x)で戻る
+ここまで
+

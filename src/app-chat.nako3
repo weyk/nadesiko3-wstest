@@ -1,0 +1,46 @@
+chatバックログは[]
+chatバックログ行数は50
+
+"chat"にアプリケーション登録には(WS,DT)
+　WSのDTをchat処理
+ここまで
+
+●(WSのJを)chat処理とは
+　J["type"]で条件分岐
+　　「nick」ならば
+　　　もし、J["data"]が空ならば、
+　　　　戻る
+　　　ここまで
+　　　もし、WS["nick"]＝NULLならば、
+　　　　WS["nick"]はJ["data"]
+　　　　「{今}> {WS["nick"]}さんが参加しました」をchat送信する。
+　　　違えば、
+　　　　WS["nick"]はJ["data"]
+　　　ここまで
+　　ここまで
+　　「close」ならば
+　　　もし、WS["nick"]≠NULLならば、
+　　　　「{今}> {WS["nick"]}さんが退場しました」をchat送信する。
+　　　ここまで
+　　ここまで
+　　「backlog」ならば
+　　　MSGは{type:"backlog",data:chatバックログ}
+　　　MSGをWS["WS"]にコマンド個別送信
+　　ここまで
+　　「msg」ならば
+　　　もし、J["data"]が空ならば、
+　　　　戻る
+　　　ここまで
+　　　「{今}> {WS["nick"]}: {J["data"]}」をchat送信する。
+　　ここまで
+　ここまで
+ここまで
+
+●(Sを)chat送信とは
+　MSGは{type:"msg",data:S}
+　MSGを"chat"へコマンド全APP送信。
+　Sをchatバックログに配列追加する。
+　もし、(chatバックログの配列要素数)＞chatバックログ行数ならば、
+　　chatバックログから0を配列削除する。
+　ここまで。
+ここまで
