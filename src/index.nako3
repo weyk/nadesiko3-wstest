@@ -1,11 +1,10 @@
 !「plugin_weykwebsocket.js」を取り込む。
-!「plugin_express」を取り込む。
+!「plugin_express.mjs」を取り込む。
 
 !「web-server.nako3」を取り込む
 !「ws-server.nako3」を取り込む
 #--- 設定 ---
-WEB_PORT=80
-WS_PORT=5001
+WEB_PORT=8080
 
 サーバはWEB_PORTでWEBサーバ設定
 

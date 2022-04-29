@@ -508,7 +508,7 @@ ships宇宙は{
 　　ここまで
 　ここまで
 　もし、DX≠0||DY≠0ならば、
-　　RAD向きはDXとDYのATAN2
+　　RAD向きはDYとDXのATAN2
 　　D向きはRAD2DEG(RAD向き)
 　　もし、D向き＜０ならば、
 　　　D向きはD向き＋３６０
@@ -526,15 +526,3 @@ ships宇宙は{
 　値は1をINDEXでSHIFT_L
 　(値とPL["control_current"]のAND)≠０で戻る
 ここまで
-
-ATAN2関数文字列は『return Math.atan2(y, x)』
-ATAN2関数は["y,x"]とATAN2関数文字列でJS関数作成
-
-●(ARGSとBODYで)JS関数作成とは
-　『(function(A,B){return new Function(A,B);})』を[ARGS,BODY]でJS関数実行を戻す
-ここまで
-
-●(xとyの)ATAN2とは
-　ATAN2関数(y, x)で戻る
-ここまで
-
